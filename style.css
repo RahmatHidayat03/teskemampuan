@@ -1,0 +1,65 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100%;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+    text-align: center;
+}
+
+.overlay-content {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.overlay-content input {
+    display: block;
+    width: 80%;
+    margin: 20px auto;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fdfdfd;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+}
+
+.hidden {
+    display: none;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    font-weight: bold;
+}
+
+.question-block {
+    margin-bottom: 25px;
+}

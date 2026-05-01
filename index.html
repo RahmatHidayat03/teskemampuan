@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian Online - Semangat Bertumbuh</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="overlay" class="overlay">
+        <div class="overlay-content">
+            <h1>Selamat Datang</h1>
+            <p>Setiap tantangan adalah anak tangga menuju kesuksesan.</p>
+            <input type="text" id="userName" placeholder="Masukkan Nama Lengkap Anda..." required>
+            <button onclick="startExam()">Mulai Ujian</button>
+        </div>
+    </div>
+
+    <div id="exam-container" class="container hidden">
+        <header>
+            <div id="timer">Waktu: 10:00</div>
+            <div id="user-display"></div>
+        </header>
+
+        <form id="quizForm">
+            <div id="question-list"></div>
+            <button type="submit" id="submit-btn">Kirim Jawaban</button>
+        </form>
+    </div>
+
+    <div id="result" class="container hidden">
+        <h2>Ujian Selesai!</h2>
+        <p id="score-display"></p>
+        <p>Jawaban Anda telah berhasil dikirim.</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

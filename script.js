@@ -52,7 +52,11 @@ const allEssay = [
     { id: 7, text: "Apa tujuan dilakukannya Sujud Sahwi di akhir shalat?" } //Untuk mengganti kesalahan atau keraguan jumlah rakaat (lupa) dalam shalat
 ];
 
+// Data Soal tetap sama, tidak ada perubahan pada isi array allPG dan allEssay
+
 let timeLimit = 10 * 60; // 10 Menit
+let selectedPG = []; // Simpan soal yang terpilih secara global
+let selectedEssay = [];
 
 function shuffle(array) {
     return array.sort(() => Math.random() - 0.5);
@@ -73,36 +77,40 @@ function startExam() {
 
 function generateQuestions() {
     const qList = document.getElementById('question-list');
-    const selectedPG = shuffle(allPG).slice(0, 20);
-    const selectedEssay = shuffle(allEssay).slice(0, 3);
+    // Acak dan simpan ke variabel global
+    selectedPG = shuffle([...allPG]).slice(0, 20);
+    selectedEssay = shuffle([...allEssay]).slice(0, 3);
 
     let html = "<h3>Bagian 1: Pilihan Ganda</h3>";
     selectedPG.forEach((q, idx) => {
-        html += `<div class="question-block"><p>${idx + 1}. ${q.text}</p>`;
+        html += `<div class="question-block"><p><b>${idx + 1}.</b> ${q.text}</p>`;
         q.options.forEach(opt => {
-            html += `<label><input type="radio" name="pg_${q.id}" value="${opt}"> ${opt}</label><br>`;
+            // Gunakan name yang unik berdasarkan ID soal asli
+            html += `<label><input type="radio" name="pg_${q.id}" value="${opt}" required> ${opt}</label><br>`;
         });
         html += `</div>`;
     });
 
     html += "<h3>Bagian 2: Essay</h3>";
     selectedEssay.forEach((q, idx) => {
-        html += `<div class="question-block"><p>${idx + 1}. ${q.text}</p>
-                 <textarea name="essay_${q.id}" rows="3" style="width:100%"></textarea></div>`;
+        html += `<div class="question-block"><p><b>${idx + 1}.</b> ${q.text}</p>
+                 <textarea name="essay_${q.id}" rows="3" style="width:100%" required placeholder="Ketik jawaban singkat..."></textarea></div>`;
     });
 
     qList.innerHTML = html;
 }
 
+let examInterval; // Simpan interval agar bisa dihentikan
 function startTimer() {
     const timerEl = document.getElementById('timer');
-    const interval = setInterval(() => {
+    examInterval = setInterval(() => {
         let mins = Math.floor(timeLimit / 60);
         let secs = timeLimit % 60;
         timerEl.innerText = `Waktu: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
 
         if (timeLimit <= 0) {
-            clearInterval(interval);
+            clearInterval(examInterval);
+            alert("Waktu habis! Jawaban Anda akan otomatis terkirim.");
             submitAnswers();
         }
         timeLimit--;
@@ -110,25 +118,50 @@ function startTimer() {
 }
 
 function activateAntiCheat() {
-    // Deteksi jika user pindah tab
+    let violationCount = 0;
     window.onblur = function () {
-        alert("Peringatan! Dilarang meninggalkan jendela ujian.");
+        violationCount++;
+        if (violationCount >= 3) {
+            alert("Anda terlalu sering meninggalkan jendela ujian. Ujian akan dihentikan!");
+            submitAnswers();
+        } else {
+            alert(`Peringatan ${violationCount}: Dilarang meninggalkan jendela ujian!`);
+        }
     };
 }
 
 document.getElementById('quizForm').onsubmit = function (e) {
     e.preventDefault();
-    submitAnswers();
+    if(confirm("Apakah Anda yakin ingin mengirim semua jawaban?")) {
+        submitAnswers();
+    }
 };
 
 function submitAnswers() {
+    // Hentikan timer dan anti-cheat
+    clearInterval(examInterval);
+    window.onblur = null;
+
     const formData = new FormData(document.getElementById('quizForm'));
+    const formEntries = Object.fromEntries(formData.entries());
+    
+    // Hitung Skor Pilihan Ganda
+    let correctCount = 0;
+    selectedPG.forEach(q => {
+        if (formEntries[`pg_${q.id}`] === q.correct) {
+            correctCount++;
+        }
+    });
+
+    const finalScore = (correctCount / selectedPG.length) * 100;
+
     const data = {
         nama: document.getElementById('userName').value,
-        jawaban: Object.fromEntries(formData.entries())
+        skor_pg: finalScore,
+        jawaban: formEntries
     };
 
-    // Kirim ke Google Apps Script (Ganti URL dengan URL Web App Anda)
+    // Kirim ke Google Apps Script
     fetch('https://script.google.com/macros/s/AKfycbxu9Oaevfo16r1k2WqdYbDzvnrsjhZKGCn54BG0kWZMsrmkwSVHTjJiFC5Zqg_9ghYq/exec', {
         method: 'POST',
         mode: 'no-cors',
@@ -136,5 +169,13 @@ function submitAnswers() {
     }).then(() => {
         document.getElementById('exam-container').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
+        document.getElementById('score-display').innerHTML = `
+            Nama: <b>${data.nama}</b><br>
+            Skor Pilihan Ganda: <b>${finalScore}</b><br>
+            <i>Jawaban Essay akan diperiksa manual oleh Aku Sendiri</i>
+        `;
+    }).catch(err => {
+        alert("Gagal mengirim jawaban. Periksa koneksi internet Anda.");
+        console.error(err);
     });
 }
